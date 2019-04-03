@@ -2,28 +2,44 @@
 import React, {Component} from 'react';
 import {Text, View} from 'react-native';
 import firebase from 'firebase'
-import {Header} from './components/common'
+import {Header, Button, Spinner, CardItem} from './components/common'
 import LoginForm from './components/LoginForm'
+import Fkey from './components/fkey'
 
 
 export default class App extends Component {
 
+  constructor(){
+    super()
+    this.state = {loggedIn: null}
+  }
+
 componentWillMount(){
-  firebase.initializeApp({
-    apiKey: "AIzaSyCuQzy3ahB_LI6NxRzAHc6Sok1C_SvP9iY",
-    authDomain: "reactnativeauth-5970f.firebaseapp.com",
-    databaseURL: "https://reactnativeauth-5970f.firebaseio.com",
-    projectId: "reactnativeauth-5970f",
-    storageBucket: "reactnativeauth-5970f.appspot.com",
-    messagingSenderId: "998108744483"
-  })
+  firebase.initializeApp(Fkey())
+  firebase.auth().onAuthStateChanged((user) => {
+    console.log(user, "USER")
+    user ? this.setState({loggedIn: true}) : this.setState({loggedIn: false})
+    })
+}
+
+formOrButton = () => {
+  switch(this.state.loggedIn) {
+    case true:
+      return (<CardItem>
+            <Button text="Log Out" fireButton={() => firebase.auth().signOut()}/>
+          </CardItem>)
+    case false:
+      return <LoginForm />
+    default:
+      return <CardItem><Spinner /></CardItem>
+  }
 }
 
   render() {
     return (
       <View >
         <Header headerText="HelloWorld!!!"/>
-        <LoginForm/>
+        {this.formOrButton()}
       </View>
     )
   }
